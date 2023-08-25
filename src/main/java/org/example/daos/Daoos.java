@@ -1,9 +1,9 @@
-package org.example.dao;
+package org.example.daos;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface Dao<T> {
+public interface Daoos<T> {
     Optional<T> get(int id);
 
     List<T> getAll();

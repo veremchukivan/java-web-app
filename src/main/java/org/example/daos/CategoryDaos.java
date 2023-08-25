@@ -1,4 +1,4 @@
-package org.example.dao;
+package org.example.daos;
 
 import org.example.entities.Category;
 import org.hibernate.Session;
@@ -8,10 +8,10 @@ import org.hibernate.Transaction;
 import java.util.List;
 import java.util.Optional;
 
-public class CategoryDao implements Dao<Category> {
+public class CategoryDaos implements Daoos<Category> {
     private final SessionFactory sessionFactory;
 
-    public CategoryDao(SessionFactory sessionFactory) {
+    public CategoryDaos(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
 
