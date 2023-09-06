@@ -7,7 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
       </profile>
-      <profile name="Annotation profile for web-app-java" enabled="true">
+      <profile name="Annotation profile for Java_project_lt" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -17,12 +17,13 @@
           <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct/1.5.5.Final/mapstruct-1.5.5.Final.jar" />
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok-mapstruct-binding/0.2.0/lombok-mapstruct-binding-0.2.0.jar" />
         </processorPath>
-        <module name="web-app-java" />
+        <module name="Java_project_lt" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="_3.WebApp" target="20" />
       <module name="web-app" target="20" />
+      <module name="web-app-java" target="20" />
     </bytecodeTargetLevel>
   </component>
 </project>

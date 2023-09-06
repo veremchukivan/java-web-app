@@ -8,9 +8,8 @@ import java.util.List;
 @Data
 public class ProductCreateDTO {
     private String name;
+    private double price;
     private String description;
-    private Double price;
-    private int categoryId;
-    private List<MultipartFile> images; // List of MultipartFile for multiple images
-    // Other fields, getters, setters
+    private int category_id;
+    private List<MultipartFile> files;
 }

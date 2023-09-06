@@ -1,63 +1,57 @@
 package org.example.Controller;
 
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.example.dto.product.ProductCreateDTO;
 import org.example.dto.product.ProductItemDTO;
 import org.example.dto.product.ProductUpdateDTO;
-import org.example.dto.productimage.ProductImageDTO;
-import org.example.services.ProductImageService;
-import org.example.services.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.example.interfaces.ProductService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
 @RestController
-@RequestMapping("/api/products")
+@AllArgsConstructor
+@RequestMapping("api/products")
 public class ProductController {
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
 
-    @Autowired
-    private ProductImageService productImageService;
-
-    @GetMapping("/{productId}")
-    public ResponseEntity<ProductItemDTO> getProductById(@PathVariable int productId) {
-        ProductItemDTO productItemDTO = productService.getProductItemDTOById(productId);
-        List<ProductImageDTO> productImages = productImageService.getProductImagesByProductId(productId);
-        productItemDTO.setImages(productImages);
-        return new ResponseEntity<>(productItemDTO, HttpStatus.OK);
+    @GetMapping
+    public ResponseEntity<List<ProductItemDTO>> index() {
+        return new ResponseEntity<>(productService.get(), HttpStatus.OK);
     }
 
-    @PostMapping
-    public ResponseEntity<ProductItemDTO> createProduct(
-            @RequestParam("category_id") int categoryId,
-            @RequestParam("images") List<MultipartFile> images,
-            @ModelAttribute ProductCreateDTO productCreateDTO
-    ) {
-        ProductItemDTO createdProduct = productService.createProduct(categoryId, productCreateDTO);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProductItemDTO> create(@Valid @ModelAttribute ProductCreateDTO model) {
+        var result = productService.create(model);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 
-        // Handle image uploads and associate them with the created product
-        for (MultipartFile image : images) {
-            productImageService.createProductImage(Math.toIntExact(createdProduct.getId()), image);
+    @PutMapping(value = "{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProductItemDTO> edit(@PathVariable("id") int id,
+                                               @Valid @ModelAttribute ProductUpdateDTO model) {
+        var result = productService.edit(id, model);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @GetMapping("{id}")
+    public ResponseEntity<ProductItemDTO> getProductById(@PathVariable("id") int id) {
+        var product = productService.getById(id);
+        if(product!=null)
+        {
+            return new ResponseEntity<>(product, HttpStatus.OK);
         }
-
-        return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
+        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
     }
 
-    @PutMapping("/{productId}")
-    public ResponseEntity<ProductItemDTO> updateProduct(
-            @PathVariable int productId,
-            @RequestBody ProductUpdateDTO productUpdateDTO
-    ) {
-        ProductItemDTO updatedProduct = productService.updateProduct(productId, productUpdateDTO);
-        return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
+    @DeleteMapping("{id}")
+    public ResponseEntity<String> delete(@PathVariable("id") int productId) {
+        productService.delete(productId);
+        return new ResponseEntity<>("Продукта нема, зник.", HttpStatus.OK);
     }
 
-    @DeleteMapping("/{productId}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable int productId) {
-        productService.deleteProduct(productId);
-        return ResponseEntity.noContent().build();
-    }
+
 }
