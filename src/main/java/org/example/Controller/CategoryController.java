@@ -39,7 +39,7 @@ public class CategoryController {
                 .image(fileName)
                 .build();
         categoryRepository.save(cat);
-        return categgitoryMapper.categoryToItemDTO(cat);
+        return categoryMapper.categoryToItemDTO(cat);
     }
     @GetMapping("/{id}")
     public ResponseEntity<CategoryItemDTO> getCategoryById(@PathVariable int id) {
