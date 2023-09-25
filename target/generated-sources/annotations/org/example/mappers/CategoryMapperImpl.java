@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2023-08-25T19:17:45+0300",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 20.0.2 (Oracle Corporation)"
+    date = "2023-09-20T17:52:39+0300",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.35.0.v20230814-2020, environment: Java 17.0.8.1 (Eclipse Adoptium)"
 )
 @Component
 public class CategoryMapperImpl implements CategoryMapper {
@@ -23,10 +23,10 @@ public class CategoryMapperImpl implements CategoryMapper {
 
         CategoryItemDTO categoryItemDTO = new CategoryItemDTO();
 
-        categoryItemDTO.setId( category.getId() );
-        categoryItemDTO.setName( category.getName() );
-        categoryItemDTO.setImage( category.getImage() );
         categoryItemDTO.setDescription( category.getDescription() );
+        categoryItemDTO.setId( category.getId() );
+        categoryItemDTO.setImage( category.getImage() );
+        categoryItemDTO.setName( category.getName() );
 
         return categoryItemDTO;
     }
