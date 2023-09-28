@@ -1,6 +1,4 @@
-
 package org.example.storage;
-
 
 public class StorageException extends RuntimeException {
 

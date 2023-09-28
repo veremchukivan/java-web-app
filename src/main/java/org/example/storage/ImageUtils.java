@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Locale;
-
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
@@ -60,7 +59,6 @@ public class ImageUtils
     {
         Dimension largestDimension = new Dimension(maxWidth, maxHeight);
 
-        // Original size
         int imageWidth = image.getWidth(null);
         int imageHeight = image.getHeight(null);
 
@@ -147,8 +145,8 @@ public class ImageUtils
      * the result is nowhere near as nice looking as the createHeadlessSmoothBufferedImage method.
      *
      * @param image  The image to convert
-     * @param width The desired image width
-     * @param height The desired image height
+     * @param w The desired image width
+     * @param h The desired image height
      * @return The converted image
      * @param type int
      */
@@ -179,8 +177,8 @@ public class ImageUtils
      * operate. The resulting image will be smoothly scaled using bilinear filtering.
      *
      * @param source The image to convert
-     * @param width The desired image width
-     * @param height The desired image height
+     * @param w The desired image width
+     * @param h The desired image height
      * @return The converted image
      * @param type  int
      */

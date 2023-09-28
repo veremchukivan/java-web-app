@@ -15,10 +15,9 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import org.example.entities.UserEntity;
 import org.example.repositories.UserRoleRepository;
-
+import org.springframework.stereotype.Service;
 import static java.lang.String.format;
 
 @Service
@@ -27,9 +26,9 @@ public class JwtService {
 
     private final UserRoleRepository userRoleRepository;
     private final String jwtSecret = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";  //ключ, яким ми шифруємо (будь-які букви чи цифри)
-    private final String jwtIssuer = "localhost";   //вказує хто власник цього токена. Можна вписати ім'я свого домена
+    private final String jwtIssuer = "step.io";   //вказує хто власник цього токена. Можна вписати ім'я свого домена
 
-    //метод призначений для того, щоб для визначеного юзера зробити jwt token
+    // метод призначений для того, щоб для визначеного юзера зробити jwt token
     public String generateAccessToken(UserEntity user) {
 
         var roles = userRoleRepository.findByUser(user);
@@ -76,11 +75,9 @@ public class JwtService {
         Claims claims = Jwts.parser()
                 .setSigningKey(jwtSecret)
                 .parseClaimsJws(token)
-                .getBody();
-
-        return claims.getExpiration();
+                .getBody();    return claims.getExpiration();
     }
-    //перевфряє чи наш токен валідний і чи видавався нашим сервером
+    // перевфряє чи наш токен валідний і чи видавався нашим сервером
     public boolean validate(String token) {
         try {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);

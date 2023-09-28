@@ -5,7 +5,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -23,13 +22,14 @@ public class FileSystemStorageService implements StorageService {
     public FileSystemStorageService(StorageProperties properties) {
         this.rootLocation = Paths.get(properties.getLocation());
     }
+
     @Override
     public void init() {
         try {
             if(!Files.exists(rootLocation))
                 Files.createDirectories(rootLocation);
         }catch(IOException e) {
-            throw new StorageException("Помилка створення папки", e);
+            throw new StorageException("Creating folder error", e);
         }
     }
 
@@ -41,9 +41,9 @@ public class FileSystemStorageService implements StorageService {
             if(resource.exists() || resource.isReadable())
                 return resource;
             else
-                throw new StorageException("Проблем читання файлу: "+filename);
+                throw new StorageException("Reading file error: "+filename);
         } catch(MalformedURLException e) {
-            throw new StorageException("Файл не знайдено: "+ filename, e);
+            throw new StorageException("File is not found: "+ filename, e);
         }
     }
 
@@ -51,59 +51,57 @@ public class FileSystemStorageService implements StorageService {
     public String save(String base64) {
         try {
             if(base64.isEmpty()) {
-                throw new StorageException("Пустий base64");
+                throw new StorageException("Empty base64");
             }
             UUID uuid = UUID.randomUUID();
-            String [] charArray = base64.split(","); //розділяємо код картинки на дві частини, відділяємо розширення
+            String [] charArray = base64.split(",");
             String extension;
             System.out.println("-----------------"+ charArray[0]);
-            switch (charArray[0]) {//check image's extension
+            switch (charArray[0]) {
                 case "data:image/png;base64":
                     extension = "png";
                     break;
-                default://should write cases for more images types
+                default:
                     extension = "jpg";
                     break;
             }
-            String randomFileName = uuid.toString()+"."+extension; //робимо ім'я файліка: унікальне ім'я + розширення
-            java.util.Base64.Decoder decoder = Base64.getDecoder(); //створюємо екземпляр декодера
-            byte[] bytes = new byte[0]; // створюємо массив байтів
-            bytes = decoder.decode(charArray[1]); // декодуємо Base64 до вайтів
-            int [] imageSize = {32, 150, 300, 600, 1200}; // масив розмірів фотографій
+            String randomFileName = uuid.toString()+"."+extension;
+            java.util.Base64.Decoder decoder = Base64.getDecoder();
+            byte[] bytes = new byte[0];
+            bytes = decoder.decode(charArray[1]);
+            int [] imageSize = {32, 150, 300, 600, 1200};
             try (var byteStream = new ByteArrayInputStream(bytes)) {
                 var image = ImageIO.read(byteStream);
-                for(int size : imageSize){ // в циклі створюємо фотки кожного розміру
-                    String directory= rootLocation.toString() +"/"+size+"_"+randomFileName; //створюємо папку де фотка буде зберігатися
-// My Example
-//створюємо буфер для нової фотографії, де важливо вказуємо розширення яке буде у фотки та розмір (32х32, 150х150)
-                    //по типу оперативна пам'ять
+                for(int size : imageSize){
+                    String directory= rootLocation.toString() +"/"+size+"_"+randomFileName;
+
                     BufferedImage newImg = ImageUtils.resizeImage(image,
                             extension=="jpg"? ImageUtils.IMAGE_JPEG : ImageUtils.IMAGE_PNG, size,size);
-                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(); //створюємо Stream
-                    //фото записуємо у потік для отримання масиву байтів
-                    ImageIO.write(newImg, extension, byteArrayOutputStream); //за допомогою цього Stream записуємо в буфер фотографію згідно з розширенням
-                    byte [] newBytes = byteArrayOutputStream.toByteArray(); //з цього Stream знову отримуємо байти
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+                    ImageIO.write(newImg, extension, byteArrayOutputStream);
+                    byte [] newBytes = byteArrayOutputStream.toByteArray();
                     FileOutputStream out = new FileOutputStream(directory);
-                    out.write(newBytes); //байти зберігаємо у фійлову систему на сервері
+                    out.write(newBytes);
                     out.close();
                 }
             }
 
             return randomFileName;
         } catch (IOException e) {
-            throw new StorageException("Проблема перетворення та збереження base64", e);
+            throw new StorageException("\n" + "Base64 conversion and save problem", e);
         }
     }
 
     @Override
     public  void  removeFile(String removeFile){
-        int[] imageSize = {32, 150, 300, 600, 1200};
+        int [] imageSize = {32, 150, 300, 600, 1200};
         for (int size : imageSize) {
-            Path filePath = load(size + "_" + removeFile);
+            Path filePath = load(size+"_"+removeFile);
             File file = new File(filePath.toString());
             if (file.delete()) {
-                System.out.println(removeFile + " Файл видалено.");
-            } else System.out.println(removeFile + " Файл не знайдено.");
+                System.out.println(removeFile + "File deleted");
+            } else System.out.println(removeFile + "File is not found");
         }
     }
 
@@ -115,60 +113,56 @@ public class FileSystemStorageService implements StorageService {
     @Override
     public String saveMultipartFile(MultipartFile file) {
         try {
-            String extension = "jpg";
+            String extension="jpg";
             UUID uuid = UUID.randomUUID();
-            String randomFileName = uuid.toString() + "." + extension; //робимо ім'я файліка: унікальне ім'я + розширення
-            byte[] bytes = new byte[0]; // створюємо массив байтів
-            bytes = file.getBytes(); // беремо байти із файлу і їх перетворуємо у фото, розмір, який нам потрібно
-            int [] imageSize = {32, 150, 300, 600, 1200}; // масив розмірів фотографій
+            String randomFileName = uuid.toString()+"."+extension;
+            byte[] bytes = new byte[0];
+            bytes = file.getBytes();
+            int [] imageSize = {32, 150, 300, 600, 1200};
             try (var byteStream = new ByteArrayInputStream(bytes)) {
                 var image = ImageIO.read(byteStream);
-                for (int size : imageSize) { // в циклі створюємо фотки кожного розміру
-                    String directory = rootLocation.toString() + "/" + size + "_" + randomFileName; //створюємо папку де фотка буде зберігатися
-// My Example
-//створюємо буфер для нової фотографії, де важливо вказуємо розширення яке буде у фотки та розмір (32х32, 150х150)
-                    //по типу оперативна пам'ять
+                for(int size : imageSize){
+                    String directory= rootLocation.toString() +"/"+size+"_"+randomFileName;
+
                     BufferedImage newImg = ImageUtils.resizeImage(image,
-                            extension == "jpg" ? ImageUtils.IMAGE_JPEG : ImageUtils.IMAGE_PNG, size, size);
-                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(); //створюємо Stream
-                    //фото записуємо у потік для отримання масиву байтів
-                    ImageIO.write(newImg, extension, byteArrayOutputStream); //за допомогою цього Stream записуємо в буфер фотографію згідно з розширенням
-                    byte[] newBytes = byteArrayOutputStream.toByteArray(); //з цього Stream знову отримуємо байти
+                            extension=="jpg"? ImageUtils.IMAGE_JPEG : ImageUtils.IMAGE_PNG, size,size);
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+                    ImageIO.write(newImg, extension, byteArrayOutputStream);
+                    byte [] newBytes = byteArrayOutputStream.toByteArray();
                     FileOutputStream out = new FileOutputStream(directory);
-                    out.write(newBytes); //байти зберігаємо у фійлову систему на сервері
+                    out.write(newBytes);
                     out.close();
                 }
             }
 
             return randomFileName;
         } catch (IOException e) {
-            throw new StorageException("Проблема перетворення та збереження base64", e);
+            throw new StorageException("Base64 conversion and save problem", e);
         }
     }
+
     @Override
     public String saveThumbnailator(MultipartFile file, FileSaveFormat format) {
         try {
             String extension = format.name().toLowerCase();
             UUID uuid = UUID.randomUUID();
-            String randomFileName = uuid.toString() + "." + extension; //робимо ім'я файліка: унікальне ім'я + розширення
-            int[] imageSize = {32, 150, 300, 600, 1200}; // масив розмірів фотографій
+            String randomFileName = uuid.toString() + "." + extension;
+            int[] imageSize = {32, 150, 300, 600, 1200};
             BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(file.getBytes()));
 
-            for (int size : imageSize) { // в циклі створюємо фотки кожного розміру
-                String directory = rootLocation.toString() + "/" + size + "_" + randomFileName; //створюємо папку де фотка буде зберігатися
+            for (int size : imageSize) {
+                String directory = rootLocation.toString() + "/" + size + "_" + randomFileName;
                 ByteArrayOutputStream bout = new ByteArrayOutputStream();
                 Thumbnails.of(bufferedImage)
                         .size(size, size)
                         .outputFormat(extension)
                         .toFile(directory);
-//                        .toOutputStream(bout);
-//                FileOutputStream out = new FileOutputStream(directory);
-//                out.write(bout.toByteArray()); //байти зберігаємо у фійлову систему на сервері
-//                out.close();
             }
             return randomFileName;
         } catch (IOException e) {
-            throw new StorageException("Проблема перетворення та збереження base64", e);
+            throw new StorageException("Base64 conversion and save problem", e);
         }
     }
 }
+
